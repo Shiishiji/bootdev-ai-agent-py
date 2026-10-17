@@ -2,6 +2,23 @@ from config import READ_MAX_CHARS
 import io
 import os
 
+schema_get_file_content = {
+    "type": "function",
+    "function": {
+        "name": "get_file_content",
+        "description": "Read content from a file by specifing it's filepath",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "file_path": {
+                    "type": "string",
+                    "description": "Path to a target file relative to the working directory. (you do not specify the working directory)",
+                }
+            },
+        },
+    },
+}
+
 
 def get_file_content(working_directory: str, file_path: str) -> str:
     working_directory_abs = os.path.abspath(working_directory)

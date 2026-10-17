@@ -1,6 +1,27 @@
 import os
 from pathlib import Path
 
+schema_write_file = {
+    "type": "function",
+    "function": {
+        "name": "write_file",
+        "description": "Write a content to a file completely overriding it by specifing target filename and it's new content",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "file_path": {
+                    "type": "string",
+                    "description": "Path to a target file relative to the working directory. (you do not specify the working directory)",
+                },
+                "content": {
+                    "type": "string",
+                    "description": "Content that will be written to specified file",
+                },
+            },
+        },
+    },
+}
+
 
 def write_file(working_directory: str, file_path: str, content: str) -> str:
     working_directory_abs = os.path.abspath(working_directory)
