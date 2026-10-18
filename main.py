@@ -37,36 +37,47 @@ def main():
         },
     ]
 
-    response = client.chat.completions.create(
-        model="openrouter/free",
-        messages=messages,
-        temperature=0,
-        tools=available_functions,
-    )
+    for i in range(20):
+        response = client.chat.completions.create(
+            model="openrouter/free",
+            messages=messages,
+            temperature=0,
+            tools=available_functions,
+        )
 
-    if response.usage == None:
-        raise RuntimeError("Missing response usage section")
+        if response.usage == None:
+            raise RuntimeError("Missing response usage section")
 
-    if isVerbose:
-        # --verbose behavior
-        # Prints useful diagnostics
-        print("User prompt: " + prompt)
-        print("Prompt tokens: " + str(response.usage.prompt_tokens))
-        print("Response tokens: " + str(response.usage.completion_tokens))
+        if isVerbose:
+            # --verbose behavior
+            # Prints useful diagnostics
+            print("User prompt: " + prompt)
+            print("Prompt tokens: " + str(response.usage.prompt_tokens))
+            print("Response tokens: " + str(response.usage.completion_tokens))
 
-    message = response.choices[0].message
+        message = response.choices[0].message
 
-    if message.tool_calls != None:
-        for tool_call in message.tool_calls:
-            function_args = json.loads(tool_call.function.arguments or "{}")
-            print(f"Calling function: {tool_call.function.name}({function_args})")
-            result_msg = call_function(tool_call, function_args)
-            if result_msg["content"] == None:
-                raise Exception("Content of tool call response must not be empty")
-            if isVerbose:
-                print(f"-> {result_msg['content']}")
+        # Add model's response to messages list
+        messages.append(message)
+
+        if message.tool_calls != None:
+            for tool_call in message.tool_calls:
+                function_args = json.loads(tool_call.function.arguments or "{}")
+                print(f"Calling function: {tool_call.function.name}({function_args})")
+                result_msg = call_function(tool_call, function_args)
+                if result_msg["content"] == None:
+                    raise Exception("Content of tool call response must not be empty")
+                # Add tool's result to messages list
+                messages.append(result_msg)
+
+                if isVerbose:
+                    print(f"-> {result_msg['content']}")
+        else:
+            print("Response: " + message.content)
+            break  # end agent's loop
     else:
-        print("Response: " + message.content)
+        print("Maximum iteration number reached without achieving results")
+        exit(1)
 
 
 if __name__ == "__main__":
